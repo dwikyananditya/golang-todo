@@ -31,7 +31,7 @@ Shutdown graceful saat SIGINT/SIGTERM.
 | RPC | Deskripsi |
 |-----|-----------|
 | `CreateTodo` | Bikin todo (title, description wajib) |
-| `GetTodo` | Ambil satu todo (`order`: ASC/DESC, default ASC) |
+| `GetTodo` | Ambil todo by id |
 | `ListTodos` | Ambil semua todo dengan sorting, filter, pagination |
 | `UpdateTodo` | Update by id |
 | `DeleteTodo` | Hapus by id |

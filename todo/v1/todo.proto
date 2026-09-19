@@ -38,7 +38,11 @@ enum SortOrder {
 }
 
 message GetTodoRequest {
-  SortOrder order = 1;
+  int64 id = 1 [(buf.validate.field).cel = {
+    id: "id.positive"
+    message: "id harus > 0"
+    expression: "this > 0"
+  }];
 }
 
 message GetTodoResponse {

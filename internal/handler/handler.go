@@ -35,7 +35,7 @@ func (h *Handler) CreateTodo(ctx context.Context, req *pb.CreateTodoRequest) (*p
 }
 
 func (h *Handler) GetTodo(ctx context.Context, req *pb.GetTodoRequest) (*pb.GetTodoResponse, error) {
-	item, err := h.todos.First(ctx, req.GetOrder() == pb.SortOrder_SORT_ORDER_DESC)
+	item, err := h.todos.Get(ctx, req.GetId())
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, status.Error(codes.NotFound, "todo not found")

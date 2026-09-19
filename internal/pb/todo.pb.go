@@ -245,7 +245,7 @@ func (x *CreateTodoResponse) GetTodo() *Todo {
 
 type GetTodoRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Order         SortOrder              `protobuf:"varint,1,opt,name=order,proto3,enum=todo.v1.SortOrder" json:"order,omitempty"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -280,11 +280,11 @@ func (*GetTodoRequest) Descriptor() ([]byte, []int) {
 	return file_todo_v1_todo_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *GetTodoRequest) GetOrder() SortOrder {
+func (x *GetTodoRequest) GetId() int64 {
 	if x != nil {
-		return x.Order
+		return x.Id
 	}
-	return SortOrder_SORT_ORDER_UNSPECIFIED
+	return 0
 }
 
 type GetTodoResponse struct {
@@ -652,9 +652,10 @@ const file_todo_v1_todo_proto_rawDesc = "" +
 	"\x14description.required\x12\x17description wajib diisi\x1a\x0fthis.size() > 0R\vdescription\x12\x17\n" +
 	"\ais_done\x18\x03 \x01(\bR\x06isDone\"7\n" +
 	"\x12CreateTodoResponse\x12!\n" +
-	"\x04todo\x18\x01 \x01(\v2\r.todo.v1.TodoR\x04todo\":\n" +
-	"\x0eGetTodoRequest\x12(\n" +
-	"\x05order\x18\x01 \x01(\x0e2\x12.todo.v1.SortOrderR\x05order\"4\n" +
+	"\x04todo\x18\x01 \x01(\v2\r.todo.v1.TodoR\x04todo\"M\n" +
+	"\x0eGetTodoRequest\x12;\n" +
+	"\x02id\x18\x01 \x01(\x03B+\xbaH(\xba\x01%\n" +
+	"\vid.positive\x12\fid harus > 0\x1a\bthis > 0R\x02id\"4\n" +
 	"\x0fGetTodoResponse\x12!\n" +
 	"\x04todo\x18\x01 \x01(\v2\r.todo.v1.TodoR\x04todo\"\x94\x01\n" +
 	"\x10ListTodosRequest\x12(\n" +
@@ -724,26 +725,25 @@ var file_todo_v1_todo_proto_goTypes = []any{
 }
 var file_todo_v1_todo_proto_depIdxs = []int32{
 	1,  // 0: todo.v1.CreateTodoResponse.todo:type_name -> todo.v1.Todo
-	0,  // 1: todo.v1.GetTodoRequest.order:type_name -> todo.v1.SortOrder
-	1,  // 2: todo.v1.GetTodoResponse.todo:type_name -> todo.v1.Todo
-	0,  // 3: todo.v1.ListTodosRequest.order:type_name -> todo.v1.SortOrder
-	1,  // 4: todo.v1.ListTodosResponse.todos:type_name -> todo.v1.Todo
-	1,  // 5: todo.v1.UpdateTodoResponse.todo:type_name -> todo.v1.Todo
-	2,  // 6: todo.v1.TodoService.CreateTodo:input_type -> todo.v1.CreateTodoRequest
-	4,  // 7: todo.v1.TodoService.GetTodo:input_type -> todo.v1.GetTodoRequest
-	6,  // 8: todo.v1.TodoService.ListTodos:input_type -> todo.v1.ListTodosRequest
-	8,  // 9: todo.v1.TodoService.UpdateTodo:input_type -> todo.v1.UpdateTodoRequest
-	10, // 10: todo.v1.TodoService.DeleteTodo:input_type -> todo.v1.DeleteTodoRequest
-	3,  // 11: todo.v1.TodoService.CreateTodo:output_type -> todo.v1.CreateTodoResponse
-	5,  // 12: todo.v1.TodoService.GetTodo:output_type -> todo.v1.GetTodoResponse
-	7,  // 13: todo.v1.TodoService.ListTodos:output_type -> todo.v1.ListTodosResponse
-	9,  // 14: todo.v1.TodoService.UpdateTodo:output_type -> todo.v1.UpdateTodoResponse
-	11, // 15: todo.v1.TodoService.DeleteTodo:output_type -> todo.v1.DeleteTodoResponse
-	11, // [11:16] is the sub-list for method output_type
-	6,  // [6:11] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	1,  // 1: todo.v1.GetTodoResponse.todo:type_name -> todo.v1.Todo
+	0,  // 2: todo.v1.ListTodosRequest.order:type_name -> todo.v1.SortOrder
+	1,  // 3: todo.v1.ListTodosResponse.todos:type_name -> todo.v1.Todo
+	1,  // 4: todo.v1.UpdateTodoResponse.todo:type_name -> todo.v1.Todo
+	2,  // 5: todo.v1.TodoService.CreateTodo:input_type -> todo.v1.CreateTodoRequest
+	4,  // 6: todo.v1.TodoService.GetTodo:input_type -> todo.v1.GetTodoRequest
+	6,  // 7: todo.v1.TodoService.ListTodos:input_type -> todo.v1.ListTodosRequest
+	8,  // 8: todo.v1.TodoService.UpdateTodo:input_type -> todo.v1.UpdateTodoRequest
+	10, // 9: todo.v1.TodoService.DeleteTodo:input_type -> todo.v1.DeleteTodoRequest
+	3,  // 10: todo.v1.TodoService.CreateTodo:output_type -> todo.v1.CreateTodoResponse
+	5,  // 11: todo.v1.TodoService.GetTodo:output_type -> todo.v1.GetTodoResponse
+	7,  // 12: todo.v1.TodoService.ListTodos:output_type -> todo.v1.ListTodosResponse
+	9,  // 13: todo.v1.TodoService.UpdateTodo:output_type -> todo.v1.UpdateTodoResponse
+	11, // 14: todo.v1.TodoService.DeleteTodo:output_type -> todo.v1.DeleteTodoResponse
+	10, // [10:15] is the sub-list for method output_type
+	5,  // [5:10] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_todo_v1_todo_proto_init() }
