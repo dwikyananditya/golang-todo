@@ -14,7 +14,8 @@ Listen di `:8080`, tabel `todo.db` (SQLite) otomatis di-migrate.
 
 | Method | Path | Deskripsi |
 |--------|------|-----------|
-| GET | `/` | Ambil todo |
+| GET | `/` | Ambil semua todo |
+| GET | `/:id` | Ambil todo by id |
 | POST | `/` | Bikin todo |
 | PATCH | `/:id` | Update todo |
 | DELETE | `/:id` | Hapus todo |

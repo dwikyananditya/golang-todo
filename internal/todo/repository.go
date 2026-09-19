@@ -8,7 +8,8 @@ import (
 
 type Repository interface {
 	Create(ctx context.Context, todo Todo) error
-	First(ctx context.Context) (Model, error)
+	Get(ctx context.Context, id int) (Model, error)
+	List(ctx context.Context) ([]Model, error)
 	Update(ctx context.Context, id int, todo Todo) (int, error)
 	Delete(ctx context.Context, id int) (int, error)
 }
@@ -33,8 +34,12 @@ func (r *GormRepository) Create(ctx context.Context, todo Todo) error {
 	})
 }
 
-func (r *GormRepository) First(ctx context.Context) (Model, error) {
-	return gorm.G[Model](r.db).Take(ctx)
+func (r *GormRepository) Get(ctx context.Context, id int) (Model, error) {
+	return gorm.G[Model](r.db).Where("id = ?", id).Take(ctx)
+}
+
+func (r *GormRepository) List(ctx context.Context) ([]Model, error) {
+	return gorm.G[Model](r.db).Order("id ASC").Find(ctx)
 }
 
 func (r *GormRepository) Update(ctx context.Context, id int, todo Todo) (int, error) {

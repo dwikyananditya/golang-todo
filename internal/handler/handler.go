@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v3"
+	"gorm.io/gorm"
 )
 
 type Handler struct {
@@ -67,7 +68,8 @@ func respondError(c fiber.Ctx, status int, message string, err error) error {
 func (h *Handler) RegisterRoutes(app *fiber.App) {
 	app.Patch("/:id", h.update)
 	app.Delete("/:id", h.delete)
-	app.Get("/", h.get)
+	app.Get("/", h.list)
+	app.Get("/:id", h.get)
 	app.Post("/", h.create)
 }
 
@@ -109,11 +111,27 @@ func (h *Handler) delete(c fiber.Ctx) error {
 }
 
 func (h *Handler) get(c fiber.Ctx) error {
-	item, err := h.todos.First(context.Background())
+	id, err := parseID(c)
 	if err != nil {
-		return respondError(c, fiber.StatusNotFound, "todo not found", err)
+		return respondError(c, fiber.StatusBadRequest, "invalid id", err)
+	}
+
+	item, err := h.todos.Get(context.Background(), id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return respondError(c, fiber.StatusNotFound, "todo not found", nil)
+		}
+		return respondError(c, fiber.StatusInternalServerError, "failed to get todo", err)
 	}
 	return respondOK(c, item)
+}
+
+func (h *Handler) list(c fiber.Ctx) error {
+	items, err := h.todos.List(context.Background())
+	if err != nil {
+		return respondError(c, fiber.StatusInternalServerError, "failed to list todos", err)
+	}
+	return respondOK(c, items)
 }
 
 func (h *Handler) create(c fiber.Ctx) error {
