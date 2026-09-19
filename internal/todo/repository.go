@@ -8,7 +8,8 @@ import (
 
 type Repository interface {
 	Create(ctx context.Context, todo Todo) (int64, error)
-	First(ctx context.Context) (Model, error)
+	First(ctx context.Context, desc bool) (Model, error)
+	List(ctx context.Context, desc bool) ([]Model, error)
 	Update(ctx context.Context, id int, todo Todo) (int, error)
 	Delete(ctx context.Context, id int) (int, error)
 }
@@ -37,8 +38,20 @@ func (r *GormRepository) Create(ctx context.Context, todo Todo) (int64, error) {
 	return int64(m.ID), nil
 }
 
-func (r *GormRepository) First(ctx context.Context) (Model, error) {
-	return gorm.G[Model](r.db).Take(ctx)
+func (r *GormRepository) First(ctx context.Context, desc bool) (Model, error) {
+	order := "id ASC"
+	if desc {
+		order = "id DESC"
+	}
+	return gorm.G[Model](r.db).Order(order).Take(ctx)
+}
+
+func (r *GormRepository) List(ctx context.Context, desc bool) ([]Model, error) {
+	order := "id ASC"
+	if desc {
+		order = "id DESC"
+	}
+	return gorm.G[Model](r.db).Order(order).Find(ctx)
 }
 
 func (r *GormRepository) Update(ctx context.Context, id int, todo Todo) (int, error) {

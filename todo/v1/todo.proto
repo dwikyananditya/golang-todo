@@ -31,10 +31,26 @@ message CreateTodoResponse {
   Todo todo = 1;
 }
 
-message GetTodoRequest {}
+enum SortOrder {
+  SORT_ORDER_UNSPECIFIED = 0;
+  SORT_ORDER_ASC = 1;
+  SORT_ORDER_DESC = 2;
+}
+
+message GetTodoRequest {
+  SortOrder order = 1;
+}
 
 message GetTodoResponse {
   Todo todo = 1;
+}
+
+message ListTodosRequest {
+  SortOrder order = 1;
+}
+
+message ListTodosResponse {
+  repeated Todo todos = 1;
 }
 
 message UpdateTodoRequest {
@@ -73,6 +89,7 @@ message DeleteTodoResponse {}
 service TodoService {
   rpc CreateTodo(CreateTodoRequest) returns (CreateTodoResponse);
   rpc GetTodo(GetTodoRequest) returns (GetTodoResponse);
+  rpc ListTodos(ListTodosRequest) returns (ListTodosResponse);
   rpc UpdateTodo(UpdateTodoRequest) returns (UpdateTodoResponse);
   rpc DeleteTodo(DeleteTodoRequest) returns (DeleteTodoResponse);
 }

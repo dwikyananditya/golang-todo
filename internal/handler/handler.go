@@ -32,12 +32,24 @@ func (h *Handler) CreateTodo(ctx context.Context, req *pb.CreateTodoRequest) (*p
 	return &pb.CreateTodoResponse{Todo: toPb(id, item)}, nil
 }
 
-func (h *Handler) GetTodo(ctx context.Context, _ *pb.GetTodoRequest) (*pb.GetTodoResponse, error) {
-	item, err := h.todos.First(ctx)
+func (h *Handler) GetTodo(ctx context.Context, req *pb.GetTodoRequest) (*pb.GetTodoResponse, error) {
+	item, err := h.todos.First(ctx, req.GetOrder() == pb.SortOrder_SORT_ORDER_DESC)
 	if err != nil {
 		return nil, status.Error(codes.NotFound, "todo not found")
 	}
 	return &pb.GetTodoResponse{Todo: toPb(int64(item.ID), item.Todo())}, nil
+}
+
+func (h *Handler) ListTodos(ctx context.Context, req *pb.ListTodosRequest) (*pb.ListTodosResponse, error) {
+	items, err := h.todos.List(ctx, req.GetOrder() == pb.SortOrder_SORT_ORDER_DESC)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to list todos")
+	}
+	out := make([]*pb.Todo, 0, len(items))
+	for _, m := range items {
+		out = append(out, toPb(int64(m.ID), m.Todo()))
+	}
+	return &pb.ListTodosResponse{Todos: out}, nil
 }
 
 func (h *Handler) UpdateTodo(ctx context.Context, req *pb.UpdateTodoRequest) (*pb.UpdateTodoResponse, error) {

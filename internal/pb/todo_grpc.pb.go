@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	TodoService_CreateTodo_FullMethodName = "/todo.v1.TodoService/CreateTodo"
 	TodoService_GetTodo_FullMethodName    = "/todo.v1.TodoService/GetTodo"
+	TodoService_ListTodos_FullMethodName  = "/todo.v1.TodoService/ListTodos"
 	TodoService_UpdateTodo_FullMethodName = "/todo.v1.TodoService/UpdateTodo"
 	TodoService_DeleteTodo_FullMethodName = "/todo.v1.TodoService/DeleteTodo"
 )
@@ -31,6 +32,7 @@ const (
 type TodoServiceClient interface {
 	CreateTodo(ctx context.Context, in *CreateTodoRequest, opts ...grpc.CallOption) (*CreateTodoResponse, error)
 	GetTodo(ctx context.Context, in *GetTodoRequest, opts ...grpc.CallOption) (*GetTodoResponse, error)
+	ListTodos(ctx context.Context, in *ListTodosRequest, opts ...grpc.CallOption) (*ListTodosResponse, error)
 	UpdateTodo(ctx context.Context, in *UpdateTodoRequest, opts ...grpc.CallOption) (*UpdateTodoResponse, error)
 	DeleteTodo(ctx context.Context, in *DeleteTodoRequest, opts ...grpc.CallOption) (*DeleteTodoResponse, error)
 }
@@ -63,6 +65,16 @@ func (c *todoServiceClient) GetTodo(ctx context.Context, in *GetTodoRequest, opt
 	return out, nil
 }
 
+func (c *todoServiceClient) ListTodos(ctx context.Context, in *ListTodosRequest, opts ...grpc.CallOption) (*ListTodosResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListTodosResponse)
+	err := c.cc.Invoke(ctx, TodoService_ListTodos_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *todoServiceClient) UpdateTodo(ctx context.Context, in *UpdateTodoRequest, opts ...grpc.CallOption) (*UpdateTodoResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UpdateTodoResponse)
@@ -89,6 +101,7 @@ func (c *todoServiceClient) DeleteTodo(ctx context.Context, in *DeleteTodoReques
 type TodoServiceServer interface {
 	CreateTodo(context.Context, *CreateTodoRequest) (*CreateTodoResponse, error)
 	GetTodo(context.Context, *GetTodoRequest) (*GetTodoResponse, error)
+	ListTodos(context.Context, *ListTodosRequest) (*ListTodosResponse, error)
 	UpdateTodo(context.Context, *UpdateTodoRequest) (*UpdateTodoResponse, error)
 	DeleteTodo(context.Context, *DeleteTodoRequest) (*DeleteTodoResponse, error)
 	mustEmbedUnimplementedTodoServiceServer()
@@ -106,6 +119,9 @@ func (UnimplementedTodoServiceServer) CreateTodo(context.Context, *CreateTodoReq
 }
 func (UnimplementedTodoServiceServer) GetTodo(context.Context, *GetTodoRequest) (*GetTodoResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetTodo not implemented")
+}
+func (UnimplementedTodoServiceServer) ListTodos(context.Context, *ListTodosRequest) (*ListTodosResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListTodos not implemented")
 }
 func (UnimplementedTodoServiceServer) UpdateTodo(context.Context, *UpdateTodoRequest) (*UpdateTodoResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateTodo not implemented")
@@ -170,6 +186,24 @@ func _TodoService_GetTodo_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TodoService_ListTodos_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListTodosRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TodoServiceServer).ListTodos(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TodoService_ListTodos_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TodoServiceServer).ListTodos(ctx, req.(*ListTodosRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _TodoService_UpdateTodo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateTodoRequest)
 	if err := dec(in); err != nil {
@@ -220,6 +254,10 @@ var TodoService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTodo",
 			Handler:    _TodoService_GetTodo_Handler,
+		},
+		{
+			MethodName: "ListTodos",
+			Handler:    _TodoService_ListTodos_Handler,
 		},
 		{
 			MethodName: "UpdateTodo",
