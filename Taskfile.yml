@@ -1,0 +1,31 @@
+version: '3'
+
+tasks:
+  default: build
+
+  generate:
+    desc: Regenerate gRPC stubs from proto
+    cmds:
+      - protoc --go_out=. --go_opt=module=todo --go-grpc_out=. --go-grpc_opt=module=todo todo/v1/todo.proto
+    sources:
+      - todo/v1/*.proto
+    generates:
+      - internal/pb/*.pb.go
+
+  build:
+    desc: Build server binary
+    deps: [generate]
+    cmds:
+      - go build -o bin/todo ./cmd/todo
+    sources:
+      - '**/*.go'
+      - go.mod
+      - go.sum
+    generates:
+      - bin/todo
+
+  run:
+    desc: Run server on :8080
+    deps: [build]
+    cmds:
+      - ./bin/todo

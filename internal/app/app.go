@@ -2,16 +2,16 @@ package app
 
 import (
 	"todo/internal/handler"
+	"todo/internal/pb"
 	"todo/internal/todo"
 
-	"github.com/gofiber/fiber/v3"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
-func New(todoRepository todo.Repository) *fiber.App {
-	application := fiber.New(fiber.Config{
-		StructValidator: handler.NewStructValidator(),
-	})
-
-	handler.New(todoRepository).RegisterRoutes(application)
-	return application
+func New(todoRepository todo.Repository) *grpc.Server {
+	server := grpc.NewServer()
+	pb.RegisterTodoServiceServer(server, handler.New(todoRepository))
+	reflection.Register(server)
+	return server
 }

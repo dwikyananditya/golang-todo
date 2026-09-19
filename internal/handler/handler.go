@@ -2,18 +2,16 @@ package handler
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"strconv"
-	"strings"
 
+	"todo/internal/pb"
 	"todo/internal/todo"
 
-	"github.com/go-playground/validator/v10"
-	"github.com/gofiber/fiber/v3"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type Handler struct {
+	pb.UnimplementedTodoServiceServer
 	todos todo.Repository
 }
 
@@ -21,113 +19,72 @@ func New(todos todo.Repository) *Handler {
 	return &Handler{todos: todos}
 }
 
-type StructValidator struct {
-	validate *validator.Validate
-}
-
-func NewStructValidator() *StructValidator {
-	return &StructValidator{validate: validator.New()}
-}
-
-func (v *StructValidator) Validate(value any) error {
-	return formatValidationErrors(v.validate.Struct(value))
-}
-
-func formatValidationErrors(err error) error {
-	var validationErrors validator.ValidationErrors
-	if !errors.As(err, &validationErrors) {
-		return err
+func (h *Handler) CreateTodo(ctx context.Context, req *pb.CreateTodoRequest) (*pb.CreateTodoResponse, error) {
+	if err := require(req.Title, req.Description); err != nil {
+		return nil, err
 	}
-
-	messages := make([]string, len(validationErrors))
-	for i, validationError := range validationErrors {
-		messages[i] = fmt.Sprintf("field '%s' failed on '%s'", validationError.Field(), validationError.Tag())
+	item := todo.Todo{
+		Title:       req.GetTitle(),
+		Description: req.GetDescription(),
+		IsDone:      req.GetIsDone(),
 	}
-	return errors.New(strings.Join(messages, "; "))
-}
-
-type Response struct {
-	Message string `json:"message,omitempty"`
-	Data    any    `json:"data,omitempty"`
-	Error   string `json:"error,omitempty"`
-}
-
-func respondOK(c fiber.Ctx, data any) error {
-	return c.JSON(Response{Data: data})
-}
-
-func respondError(c fiber.Ctx, status int, message string, err error) error {
-	errorMessage := ""
+	id, err := h.todos.Create(ctx, item)
 	if err != nil {
-		errorMessage = err.Error()
+		return nil, status.Error(codes.Internal, "failed to create todo")
 	}
-	return c.Status(status).JSON(Response{Message: message, Error: errorMessage})
+	return &pb.CreateTodoResponse{Todo: toPb(id, item)}, nil
 }
 
-func (h *Handler) RegisterRoutes(app *fiber.App) {
-	app.Patch("/:id", h.update)
-	app.Delete("/:id", h.delete)
-	app.Get("/", h.get)
-	app.Post("/", h.create)
+func (h *Handler) GetTodo(ctx context.Context, _ *pb.GetTodoRequest) (*pb.GetTodoResponse, error) {
+	item, err := h.todos.First(ctx)
+	if err != nil {
+		return nil, status.Error(codes.NotFound, "todo not found")
+	}
+	return &pb.GetTodoResponse{Todo: toPb(int64(item.ID), item.Todo())}, nil
 }
 
-func (h *Handler) update(c fiber.Ctx) error {
-	id, err := parseID(c)
-	if err != nil {
-		return respondError(c, fiber.StatusBadRequest, "invalid id", err)
+func (h *Handler) UpdateTodo(ctx context.Context, req *pb.UpdateTodoRequest) (*pb.UpdateTodoResponse, error) {
+	if err := require(req.Title, req.Description); err != nil {
+		return nil, err
 	}
-
-	request := new(todo.Todo)
-	if err := c.Bind().Body(request); err != nil {
-		return respondError(c, fiber.StatusBadRequest, "invalid request body", err)
+	item := todo.Todo{
+		Title:       req.GetTitle(),
+		Description: req.GetDescription(),
+		IsDone:      req.GetIsDone(),
 	}
-
-	rows, err := h.todos.Update(context.Background(), id, *request)
+	rows, err := h.todos.Update(ctx, int(req.GetId()), item)
 	if err != nil {
-		return respondError(c, fiber.StatusInternalServerError, "failed to update todo", err)
+		return nil, status.Error(codes.Internal, "failed to update todo")
 	}
 	if rows == 0 {
-		return respondError(c, fiber.StatusNotFound, "todo not found", nil)
+		return nil, status.Error(codes.NotFound, "todo not found")
 	}
-	return respondOK(c, request)
+	return &pb.UpdateTodoResponse{Todo: toPb(req.GetId(), item)}, nil
 }
 
-func (h *Handler) delete(c fiber.Ctx) error {
-	id, err := parseID(c)
+func (h *Handler) DeleteTodo(ctx context.Context, req *pb.DeleteTodoRequest) (*pb.DeleteTodoResponse, error) {
+	rows, err := h.todos.Delete(ctx, int(req.GetId()))
 	if err != nil {
-		return respondError(c, fiber.StatusBadRequest, "invalid id", err)
-	}
-
-	rows, err := h.todos.Delete(context.Background(), id)
-	if err != nil {
-		return respondError(c, fiber.StatusInternalServerError, "failed to delete todo", err)
+		return nil, status.Error(codes.Internal, "failed to delete todo")
 	}
 	if rows == 0 {
-		return respondError(c, fiber.StatusNotFound, "todo not found", nil)
+		return nil, status.Error(codes.NotFound, "todo not found")
 	}
-	return respondOK(c, fiber.Map{"id": id})
+	return &pb.DeleteTodoResponse{}, nil
 }
 
-func (h *Handler) get(c fiber.Ctx) error {
-	item, err := h.todos.First(context.Background())
-	if err != nil {
-		return respondError(c, fiber.StatusNotFound, "todo not found", err)
+func require(title, description string) error {
+	if title == "" || description == "" {
+		return status.Error(codes.InvalidArgument, "title and description are required")
 	}
-	return respondOK(c, item)
+	return nil
 }
 
-func (h *Handler) create(c fiber.Ctx) error {
-	request := new(todo.Todo)
-	if err := c.Bind().Body(request); err != nil {
-		return respondError(c, fiber.StatusBadRequest, "invalid request body", err)
+func toPb(id int64, item todo.Todo) *pb.Todo {
+	return &pb.Todo{
+		Id:          id,
+		Title:       item.Title,
+		Description: item.Description,
+		IsDone:      item.IsDone,
 	}
-
-	if err := h.todos.Create(context.Background(), *request); err != nil {
-		return respondError(c, fiber.StatusInternalServerError, "failed to create todo", err)
-	}
-	return respondOK(c, request)
-}
-
-func parseID(c fiber.Ctx) (int, error) {
-	return strconv.Atoi(c.Params("id"))
 }

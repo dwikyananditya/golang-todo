@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"net"
 
 	"todo/internal/app"
 	"todo/internal/todo"
@@ -21,6 +22,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	application := app.New(todoRepository)
-	log.Fatal(application.Listen(":8080"))
+	lis, err := net.Listen("tcp", ":8080")
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("listening on :8080")
+	log.Fatal(app.New(todoRepository).Serve(lis))
 }
