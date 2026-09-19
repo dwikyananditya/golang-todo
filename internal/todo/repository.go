@@ -6,10 +6,17 @@ import (
 	"gorm.io/gorm"
 )
 
+type ListQuery struct {
+	Desc   bool
+	Done   *bool
+	Limit  int
+	Offset int
+}
+
 type Repository interface {
 	Create(ctx context.Context, todo Todo) (int64, error)
 	First(ctx context.Context, desc bool) (Model, error)
-	List(ctx context.Context, desc bool) ([]Model, error)
+	List(ctx context.Context, q ListQuery) ([]Model, error)
 	Update(ctx context.Context, id int, todo Todo) (int, error)
 	Delete(ctx context.Context, id int) (int, error)
 }
@@ -46,12 +53,22 @@ func (r *GormRepository) First(ctx context.Context, desc bool) (Model, error) {
 	return gorm.G[Model](r.db).Order(order).Take(ctx)
 }
 
-func (r *GormRepository) List(ctx context.Context, desc bool) ([]Model, error) {
+func (r *GormRepository) List(ctx context.Context, q ListQuery) ([]Model, error) {
 	order := "id ASC"
-	if desc {
+	if q.Desc {
 		order = "id DESC"
 	}
-	return gorm.G[Model](r.db).Order(order).Find(ctx)
+	g := gorm.G[Model](r.db).Order(order)
+	if q.Done != nil {
+		g = g.Where("is_done = ?", *q.Done)
+	}
+	if q.Limit > 0 {
+		g = g.Limit(q.Limit)
+	}
+	if q.Offset > 0 {
+		g = g.Offset(q.Offset)
+	}
+	return g.Find(ctx)
 }
 
 func (r *GormRepository) Update(ctx context.Context, id int, todo Todo) (int, error) {

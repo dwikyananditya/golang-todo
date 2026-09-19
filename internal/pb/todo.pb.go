@@ -334,6 +334,9 @@ func (x *GetTodoResponse) GetTodo() *Todo {
 type ListTodosRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Order         SortOrder              `protobuf:"varint,1,opt,name=order,proto3,enum=todo.v1.SortOrder" json:"order,omitempty"`
+	IsDone        *bool                  `protobuf:"varint,2,opt,name=is_done,json=isDone,proto3,oneof" json:"is_done,omitempty"`
+	Limit         int32                  `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
+	Offset        int32                  `protobuf:"varint,4,opt,name=offset,proto3" json:"offset,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -373,6 +376,27 @@ func (x *ListTodosRequest) GetOrder() SortOrder {
 		return x.Order
 	}
 	return SortOrder_SORT_ORDER_UNSPECIFIED
+}
+
+func (x *ListTodosRequest) GetIsDone() bool {
+	if x != nil && x.IsDone != nil {
+		return *x.IsDone
+	}
+	return false
+}
+
+func (x *ListTodosRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *ListTodosRequest) GetOffset() int32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
 }
 
 type ListTodosResponse struct {
@@ -632,9 +656,14 @@ const file_todo_v1_todo_proto_rawDesc = "" +
 	"\x0eGetTodoRequest\x12(\n" +
 	"\x05order\x18\x01 \x01(\x0e2\x12.todo.v1.SortOrderR\x05order\"4\n" +
 	"\x0fGetTodoResponse\x12!\n" +
-	"\x04todo\x18\x01 \x01(\v2\r.todo.v1.TodoR\x04todo\"<\n" +
+	"\x04todo\x18\x01 \x01(\v2\r.todo.v1.TodoR\x04todo\"\x94\x01\n" +
 	"\x10ListTodosRequest\x12(\n" +
-	"\x05order\x18\x01 \x01(\x0e2\x12.todo.v1.SortOrderR\x05order\"8\n" +
+	"\x05order\x18\x01 \x01(\x0e2\x12.todo.v1.SortOrderR\x05order\x12\x1c\n" +
+	"\ais_done\x18\x02 \x01(\bH\x00R\x06isDone\x88\x01\x01\x12\x14\n" +
+	"\x05limit\x18\x03 \x01(\x05R\x05limit\x12\x16\n" +
+	"\x06offset\x18\x04 \x01(\x05R\x06offsetB\n" +
+	"\n" +
+	"\b_is_done\"8\n" +
 	"\x11ListTodosResponse\x12#\n" +
 	"\x05todos\x18\x01 \x03(\v2\r.todo.v1.TodoR\x05todos\"\xa5\x02\n" +
 	"\x11UpdateTodoRequest\x12;\n" +
@@ -722,6 +751,7 @@ func file_todo_v1_todo_proto_init() {
 	if File_todo_v1_todo_proto != nil {
 		return
 	}
+	file_todo_v1_todo_proto_msgTypes[5].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

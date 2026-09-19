@@ -2,10 +2,12 @@ package handler
 
 import (
 	"context"
+	"errors"
 
 	"todo/internal/pb"
 	"todo/internal/todo"
 
+	"gorm.io/gorm"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -35,13 +37,28 @@ func (h *Handler) CreateTodo(ctx context.Context, req *pb.CreateTodoRequest) (*p
 func (h *Handler) GetTodo(ctx context.Context, req *pb.GetTodoRequest) (*pb.GetTodoResponse, error) {
 	item, err := h.todos.First(ctx, req.GetOrder() == pb.SortOrder_SORT_ORDER_DESC)
 	if err != nil {
-		return nil, status.Error(codes.NotFound, "todo not found")
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, status.Error(codes.NotFound, "todo not found")
+		}
+		return nil, status.Error(codes.Internal, "failed to get todo")
 	}
 	return &pb.GetTodoResponse{Todo: toPb(int64(item.ID), item.Todo())}, nil
 }
 
 func (h *Handler) ListTodos(ctx context.Context, req *pb.ListTodosRequest) (*pb.ListTodosResponse, error) {
-	items, err := h.todos.List(ctx, req.GetOrder() == pb.SortOrder_SORT_ORDER_DESC)
+	limit := int(req.GetLimit())
+	if limit <= 0 {
+		limit = 50
+	} else if limit > 100 {
+		limit = 100
+	}
+	q := todo.ListQuery{
+		Desc:   req.GetOrder() == pb.SortOrder_SORT_ORDER_DESC,
+		Done:   req.IsDone,
+		Limit:  limit,
+		Offset: int(req.GetOffset()),
+	}
+	items, err := h.todos.List(ctx, q)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "failed to list todos")
 	}
