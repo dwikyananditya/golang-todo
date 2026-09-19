@@ -6,7 +6,8 @@ tasks:
   generate:
     desc: Regenerate gRPC stubs from proto
     cmds:
-      - protoc --go_out=. --go_opt=module=todo --go-grpc_out=. --go-grpc_opt=module=todo todo/v1/todo.proto
+      - buf dep update
+      - buf generate
     sources:
       - todo/v1/*.proto
     generates:

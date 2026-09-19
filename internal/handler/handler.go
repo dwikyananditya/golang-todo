@@ -20,9 +20,6 @@ func New(todos todo.Repository) *Handler {
 }
 
 func (h *Handler) CreateTodo(ctx context.Context, req *pb.CreateTodoRequest) (*pb.CreateTodoResponse, error) {
-	if err := require(req.Title, req.Description); err != nil {
-		return nil, err
-	}
 	item := todo.Todo{
 		Title:       req.GetTitle(),
 		Description: req.GetDescription(),
@@ -44,9 +41,6 @@ func (h *Handler) GetTodo(ctx context.Context, _ *pb.GetTodoRequest) (*pb.GetTod
 }
 
 func (h *Handler) UpdateTodo(ctx context.Context, req *pb.UpdateTodoRequest) (*pb.UpdateTodoResponse, error) {
-	if err := require(req.Title, req.Description); err != nil {
-		return nil, err
-	}
 	item := todo.Todo{
 		Title:       req.GetTitle(),
 		Description: req.GetDescription(),
@@ -71,13 +65,6 @@ func (h *Handler) DeleteTodo(ctx context.Context, req *pb.DeleteTodoRequest) (*p
 		return nil, status.Error(codes.NotFound, "todo not found")
 	}
 	return &pb.DeleteTodoResponse{}, nil
-}
-
-func require(title, description string) error {
-	if title == "" || description == "" {
-		return status.Error(codes.InvalidArgument, "title and description are required")
-	}
-	return nil
 }
 
 func toPb(id int64, item todo.Todo) *pb.Todo {

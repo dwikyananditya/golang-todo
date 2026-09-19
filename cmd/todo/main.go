@@ -26,6 +26,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	server, err := app.New(todoRepository)
+	if err != nil {
+		log.Fatal(err)
+	}
 	log.Println("listening on :8080")
-	log.Fatal(app.New(todoRepository).Serve(lis))
+	log.Fatal(server.Serve(lis))
 }

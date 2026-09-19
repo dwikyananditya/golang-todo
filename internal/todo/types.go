@@ -10,8 +10,8 @@ type Model struct {
 }
 
 type Todo struct {
-	Title       string `json:"title" validate:"required"`
-	Description string `json:"description" validate:"required"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
 	IsDone      bool   `json:"is_done"`
 }
 
