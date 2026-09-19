@@ -1,6 +1,6 @@
 # todo
 
-> **Catatan:** versi lama (HTTP/Fiber) ada di branch [`main`](../../tree/main).
+> **Catatan:** versi lama (HTTP/Fiber) ada di branch [`main`](https://github.com/dwikyananditya/golang-todo/tree/main).
 
 Service todo sederhana pakai Go — gRPC + GORM + SQLite, dengan validasi request via protovalidate.
 
